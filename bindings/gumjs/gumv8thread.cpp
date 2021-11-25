@@ -88,10 +88,17 @@ GUMJS_DEFINE_FUNCTION (gumjs_thread_backtrace)
 {
   auto context = isolate->GetCurrentContext ();
 
+  guint limit;   
   GumCpuContext * cpu_context = NULL;
   Local<Value> selector;
-  if (!_gum_v8_args_parse (args, "|C?V", &cpu_context, &selector))
+  if (!_gum_v8_args_parse (args, "|C?Vu", &cpu_context, &selector, &limit))
     return;
+
+  if (limit == 0)
+    // 0 means default, why would you backtrace and ask for 0 frames anyway? 
+    // TODO: Make sure gum/gumdefs.h is included
+    // TODO: Tests 
+    limit = GUM_MAX_BACKTRACE_DEPTH;  
 
   gboolean accurate = TRUE;
   if (!selector.IsEmpty ())
@@ -131,9 +138,9 @@ GUMJS_DEFINE_FUNCTION (gumjs_thread_backtrace)
   }
 
   GumReturnAddressArray ret_addrs;
-  gum_backtracer_generate (backtracer, cpu_context, &ret_addrs);
+  gum_backtracer_generate (backtracer, cpu_context, &ret_addrs, limit);
 
-  auto result = Array::New (isolate, ret_addrs.len);
+   auto result = Array::New (isolate, ret_addrs.len);
   for (guint i = 0; i != ret_addrs.len; i++)
   {
     result->Set (context, i,

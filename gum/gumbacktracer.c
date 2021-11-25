@@ -71,10 +71,11 @@ gum_backtracer_make_fuzzy (void)
 void
 gum_backtracer_generate (GumBacktracer * self,
                          const GumCpuContext * cpu_context,
-                         GumReturnAddressArray * return_addresses)
+                         GumReturnAddressArray * return_addresses,
+                         guint limit)
 {
   gum_backtracer_generate_with_limit (self, cpu_context, return_addresses,
-      GUM_MAX_BACKTRACE_DEPTH);
+      limit);
 }
 
 void
